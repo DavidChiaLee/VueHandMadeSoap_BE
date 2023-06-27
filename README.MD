@@ -1,4 +1,4 @@
-# Handmade Soap 後端
+# HandmadeSoap_BE
 
 ## 使用技術
 * 前端 : Vue 3、Vite 、 sass 
