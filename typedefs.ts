@@ -4,11 +4,12 @@ export const typeDefs = gql`
   type Query {
     hello: String!
     allUsers: [User!]!
+    getUserId(email:String!) : User
   }
 
   type Mutation {
     insertUser(nickname: String!,email: String!, password: String): User!
-    updateUser(id: Int!, firstname: String!, lastname: String!): User!
+    updateUser(id: Int!, nickname: String!,email: String!): User!
     deleteUser(id: Int!): Boolean!
     authUser(username: String!, password: String!): String!
     checkJWT(jwt: String!): Boolean!

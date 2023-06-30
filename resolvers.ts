@@ -7,14 +7,15 @@ import { key } from "./apiKey.ts";
 export const resolvers = {
     Query: {
         hello: () => `Hello World!`,
-        allUsers: () => allUsers()
+        allUsers: () => allUsers(),
+        getUserId: (_: any, args: any) => getUserId(args)
     },   
     Mutation: {
         insertUser: (_: any, args: any) => insertUser(args),
         updateUser: (_: any, args: any) => updateUser(args),
         deleteUser: (_: any, args: any) => deleteUser(args),
         authUser: (_: any, args: any) => authUser(args),
-        checkJWT: (_: any, args: any) => checkJWT(args)
+        checkJWT: (_: any, args: any) => checkJWT(args),
     }
 };
 
@@ -50,9 +51,9 @@ async function insertUser(args: { nickname: any; email: any;  password: string;}
 }
   
 // 更新資料
-async function updateUser(args: { firstname: any; lastname: any; id: any; }){
-    let result = await client.execute(`UPDATE users SET firstname = '${args.firstname}', lastname = '${args.lastname}' WHERE id = ${args.id}`);
-    let getUser = await client.query("select * from ?? where id = ?", ["users", args.id]);
+async function updateUser(args: { id: any; nickname: any;  email: any; }){
+    let result = await client.execute(`UPDATE users SET nickname = '${args.nickname}' WHERE id = ${args.id} and email = '${args.email}'`);
+    let getUser = await client.query("select * from ?? where id = ? and email =?", ["users", args.id , args.email]);
     return getUser[0];
 }
   
@@ -66,19 +67,16 @@ async function deleteUser(args: { id: any; }){
 async function authUser(args: { username: string; password: string; }){
     let user_data = await getUser(args.username);
     //console.log(user_data[0].password);
-  
     if(user_data.length > 0){
       // 解密
       const pwd_result = await bcrypt.compare(args.password, user_data[0].password);
       if(pwd_result){ // 密碼核對通過，回傳 JWT
-  
         // 產生 jwt
         let jwt = await create({ alg: "HS256", typ: "JWT" }, {
           id: user_data[0].id,
           nickname: user_data[0].nickname,
           exp: getNumericDate(60 * 60)}, key
         );
-  
         return jwt;
       }
     }
@@ -95,4 +93,15 @@ async function checkJWT(args: { jwt: string; }){
         return true;
     }
     return false;
+}
+
+//取得user id，更新要用
+async function getUserId(args: {email: any;}){
+    let getUserId = await client.query("select id from ?? where email =?", ["users" , args.email]); 
+    if(getUserId){
+        return getUserId[0];
+    }else{
+        return false;
+    }
+
 }
